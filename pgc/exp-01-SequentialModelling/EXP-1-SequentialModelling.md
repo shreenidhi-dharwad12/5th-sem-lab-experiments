@@ -1,70 +1,131 @@
-Experiment 01 - Sequential Matrix Multiplication
+# Experiment 1: Sequential Matrix Multiplication
 
-Aim
+**Course:** Parallel Computing and GPU
+**Platform:** macOS Terminal (native, no WSL/VMware — see adaptation notes below)
 
-To implement matrix multiplication sequentially using C and measure the execution time for a large matrix.
+---
 
-Problem Statement
+## 1. Objective
 
-Perform multiplication of two 4000 x 4000 matrices using a sequential C program and verify the correctness of the result.
+Implement and benchmark a naive sequential (single-threaded) matrix multiplication of two 4000×4000 matrices, to serve as the baseline for comparing against the OpenMP, MPI, and CUDA versions in later experiments.
 
-Technology Used
+## 2. System Info
 
-• Language: C
-• Compiler: GCC
-• Matrix Size: 4000 x 4000
-• Execution Environment: Ubuntu / Linux
+> Fill this in with your own machine's details — run `sysctl -n machdep.cpu.brand_string` and `sysctl -n hw.ncpu` in Terminal.
 
-Algorithm
+| | |
+|---|---|
+| CPU | *e.g. Apple M2, 8 cores* |
+| OS | macOS *(version)* |
+| Compiler | `gcc --version` output |
 
-1. Initialize matrices A and B.
-2. Initialize all elements of A and B to 1.
-3. Multiply the matrices using three nested loops.
-4. Store the result in matrix C.
-5. Measure the execution time.
-6. Verify the result using C[0][0].
+## 3. Adaptation Note
 
-Matrix Multiplication
+The reference manual assumes Windows + WSL2 Ubuntu. macOS's Terminal is already a native Unix shell, so this experiment runs directly — no WSL, no VM, no Docker needed for this part.
 
-Each element of the result matrix is calculated by multiplying one row of matrix A with one column of matrix B and adding the products.
+## 4. Source Code
 
-Compilation
+`matrix_sequential.c`:
 
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+#define N 4000
+
+int main(void) {
+    // Heap-allocate — 4000*4000*8 bytes = 128MB per matrix, too big for the stack
+    double *A = malloc(sizeof(double) * (size_t)N * N);
+    double *B = malloc(sizeof(double) * (size_t)N * N);
+    double *C = malloc(sizeof(double) * (size_t)N * N);
+
+    if (!A || !B || !C) {
+        fprintf(stderr, "Memory allocation failed\n");
+        return 1;
+    }
+
+    // Initialize A and B to 1.0, per the reference problem definition
+    for (long i = 0; i < (long)N * N; i++) {
+        A[i] = 1.0;
+        B[i] = 1.0;
+    }
+
+    struct timespec start, end;
+    clock_gettime(CLOCK_MONOTONIC, &start);
+
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++) {
+            double sum = 0.0;
+            for (int k = 0; k < N; k++) {
+                sum += A[i * N + k] * B[k * N + j];
+            }
+            C[i * N + j] = sum;
+        }
+    }
+
+    clock_gettime(CLOCK_MONOTONIC, &end);
+    double elapsed = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;
+
+    printf("Sequential Matrix Multiplication (%d x %d)\n", N, N);
+    printf("Execution time: %f seconds\n", elapsed);
+    printf("C[0][0] = %.2f\n", C[0]);
+
+    free(A);
+    free(B);
+    free(C);
+    return 0;
+}
+```
+
+## 5. Compilation & Execution
+
+```bash
+mkdir -p matrix_seq && cd matrix_seq
+# save matrix_sequential.c here
 gcc -O2 matrix_sequential.c -o matrix_sequential
-
-Execution
-
 ./matrix_sequential
+```
 
-Result
+## 6. Output
 
-Matrix Size = 4000 x 4000
-
-Execution Time = 344.181180 seconds
-
-Verification C[0][0] = 4000.00
-
-Verification
-
-Since every element of matrices A and B is initialized to 1:
-
-C[0][0] = 1*1 + 1*1 + ... + 1*1
-
-There are 4000 terms.
-
-Therefore:
-
+```
+Sequential Matrix Multiplication (4000 x 4000)
+Execution time: <your seconds> seconds
 C[0][0] = 4000.00
+```
 
-The result is verified successfully.
+`C[0][0] = 4000.00` confirms correctness (every element of A and B is 1.0, so each dot product sums 4000 ones).
 
-Complexity
+## 7. Screenshots
 
-• Time Complexity: O(N^3)
-• Space Complexity: O(N^2)
+![Compiler version](./exp-01-sequentialmodelling/screenshots/01-compiler-version.png)
+*Terminal showing `gcc --version`*
 
-For N = 4000, sequential matrix multiplication requires a large number of operations.
+![Compile command](./exp-01-sequentialmodelling/screenshots/02-compile.png)
+*Compilation with no errors*
 
-Conclusion
+![Program output](./exp-01-sequentialmodelling/screenshots/03-output.png)
+*Execution time and `C[0][0] = 4000.00`*
 
-The sequential implementation successfully performed multiplication of two 4000 x 4000 matrices. The execution time was 344.181180 seconds, and the result was verified using C[0][0] = 4000.00.
+## 8. Observations
+
+> Fill in after running: your recorded execution time, and how it compares once you have the OpenMP/MPI/CUDA numbers later (this becomes your speedup baseline).
+
+---
+
+## Repo folder structure for this experiment
+
+Since this file lives at `parallel-computing-and-gpu/exp-01-sequentialmodelling.md`, put its code and screenshots in a matching subfolder right next to it — that's what the image paths above point to:
+
+```
+parallel-computing-and-gpu/
+├── exp-01-sequentialmodelling.md
+└── exp-01-sequentialmodelling/
+    ├── matrix_sequential.c
+    └── screenshots/
+        ├── 01-compiler-version.png
+        ├── 02-compile.png
+        └── 03-files.png
+```
+
