@@ -97,31 +97,7 @@ C[0][0] = 4000.00
 
 `C[0][0] = 4000.00` confirms correctness (every element of A and B is 1.0, so each dot product sums 4000 ones).
 
-## 7. Screenshots
 
-![Compiler version](./exp-01-sequentialmodelling/screenshots/01-compiler-version.png)
-*Terminal showing `gcc --version`*
-
-![Compile command](./exp-01-sequentialmodelling/screenshots/02-compile.png)
-*Compilation with no errors*
-
-![Program output](./exp-01-sequentialmodelling/screenshots/03-output.png)
-*Execution time and `C[0][0] = 4000.00`*
-
-## 8. Observations
-
-> Fill in after running: your recorded execution time, and how it compares once you have the OpenMP/MPI/CUDA numbers later (this becomes your speedup baseline).
-
----
-
-## Repo folder structure for this experiment
-
-Since this file lives at `parallel-computing-and-gpu/exp-01-sequentialmodelling.md`, put its code and screenshots in a matching subfolder right next to it — that's what the image paths above point to:
-
-```
-parallel-computing-and-gpu/
-├── exp-01-sequentialmodelling.md
-└── exp-01-sequentialmodelling/
     ├── matrix_sequential.c
     └── screenshots/
         ├── 01-compiler-version.png
